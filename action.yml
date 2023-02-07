@@ -28,6 +28,9 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Setup Zmicro
+      uses: zmicro-design/action-setup-zmicro@v1
+
     - name: NPM Publish
       shell: zmicro {0}
       run: |
