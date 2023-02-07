@@ -7,6 +7,9 @@
 
 | option | required | description |
 | ------ | -------- | ----------- |
+｜ registry | false | npm auth token |
+| token | true | npm registry |
+| always-auth | false | set always-auth |
 
 ### Example
 
