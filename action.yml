@@ -1,0 +1,80 @@
+name: "NPM Publish with Zmicro"
+description: "github action for running npm publish with Zmicro"
+author: "Zero <GitHub: whatwewant>"
+branding:
+  icon: "message-square"
+  color: "green"
+inputs:
+  token:
+    required: true
+    description: Used to publish npm
+  registry:
+    required: false
+    description: Optional registry to set up for auth
+    default: "https://registry.npmjs.org"
+  always-auth:
+    required: false
+    description: Set always-auth in npmrc
+    default: "true"
+  debug:
+    required: false
+    description: Debug Mode
+    default: "false"
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+
+runs:
+  using: composite
+  steps:
+    - name: NPM Publish
+      shell: zmicro {0}
+      run: |
+        DEBUG=${{ inputs.debug }}
+        REGISTRY=${{ inputs.registry }}
+        ALWAYS_WAYS_AUTH=${{ inputs.always-auth }}
+        NPM_TOKEN=${{ inputs.token }}
+
+        # PREFIX
+        PREFIX="$REGISTRY"
+
+        if [ -z "$REGISTRY" ]; then
+          log::error "[$(timestamp)] registry is required"
+          return 1
+        fi
+
+        # remove http: | https:
+        PREFIX=${PREFIX#http:}
+        PREFIX=${PREFIX#https:}
+        # add end slash
+        if [ "$(string::ends_with $PREFIX /)" != "true" ]; then
+          PREFIX="${PREFIX}/"
+        fi
+
+        log::info "[$(timestamp)] set registry: $REGISTRY ..."
+        npm set registry $REGISTRY
+
+        if [ -n "$ALWAYS_WAYS_AUTH" ]; then
+          log::info "[$(timestamp)] set always auth: $PREFIX:always-auth ..."
+          npm config set $PREFIX:always-auth true
+        fi
+
+        if [ -n "$NPM_TOKEN" ]; then
+          log::info "[$(timestamp)] set always auth: $PREFIX:_authToken ..."
+          npm config set $PREFIX:_authToken "$NPM_TOKEN"
+        fi
+
+        if [ "$DEBUG" = "true" ]; then
+          log::info "[$(timestamp)] show npm config ..."
+          npm config list
+          exit 0
+        fi
+
+        log::info "[$(timestamp)] start to publish ..."
+        npm publish
+        if [ "$?" != "0" ]; then
+          log::error "[$(timestamp)] failed to publish ..."
+          exit 1
+        fi
+        log::success "[$(timestamp)] succeed to publish ..."
