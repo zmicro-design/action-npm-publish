@@ -44,7 +44,7 @@ runs:
 
         # store local npmrc
         if [ -f "$LOCAL_NPM_RC" ]; then
-          if [ ! -f "/tmp" ]; then
+          if [ ! -d "/tmp" ]; then
             mkdir -p /tmp
           fi
 
