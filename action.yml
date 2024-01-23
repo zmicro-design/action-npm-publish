@@ -39,6 +39,19 @@ runs:
         ALWAYS_WAYS_AUTH=${{ inputs.always-auth }}
         NPM_TOKEN=${{ inputs.token }}
 
+        LOCAL_NPM_RC=$PWD/.npmrc
+        TMP_NPM_RC=/tmp/.npmrc
+
+        # store local npmrc
+        if [ -f "$LOCAL_NPM_RC" ]; then
+          if [ ! -d "/tmp" ]; then
+            mkdir -p /tmp
+          fi
+
+          log::info "[$(timestamp)] store local npmrc ..."
+          mv $LOCAL_NPM_RC $TMP_NPM_RC
+        fi
+
         # PREFIX
         PREFIX="$REGISTRY"
 
@@ -81,3 +94,9 @@ runs:
           exit 1
         fi
         log::success "[$(timestamp)] succeed to publish ..."
+
+        # restore local npmrc
+        if [ -f "$TMP_NPM_RC" ]; then
+          log::info "[$(timestamp)] restore local npmrc ..."
+          mv $TMP_NPM_RC $LOCAL_NPM_RC
+        fi
